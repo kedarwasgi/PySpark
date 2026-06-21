@@ -1,1 +1,40 @@
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName('WordCount').getOrCreate()
+sc = spark.sparkContext
+
+text_rdd = sc.textFile('path to your text file.txt')
+
+word_count = text_rdd.flatMap(lambda x:x.split(' ')).map(lambda x:(x,1)).reducedByKey(lambda x,y:(x+y))
+
+result = word_count.collect()  # Output: List of (word, count) tuples
+
+'''
+eg.
+textFile = 'Hi Kedar Hi'
+
+#step1: after flatmap
+['Hi', 
+'Kedar',
+'Hi']
+
+#step2: after map
+[('Hi',1),
+ ('Kedar',1),
+ ('Hi',1)]
+
+#step3: after reducedByKey
+[('Hi',2),
+ ('Kedar',1)]
+
+ 
+'''
+
+
+
+
+
+
+
+
 
