@@ -1,0 +1,35 @@
+#Reading CSVs
+
+from pyspark.sql import SparkSession
+from pyspark.sql.types import *
+
+spark = SparkSession.builder.appName('read_csv').getOrCreate()
+
+# Read with schema inference (OK for dev, in prod define schema explicitly)
+df = spark.read.csv('employees.csv', header=True, inferSchema=True)
+
+#Equivalently you can also do:
+df = spark.read \
+    .format("csv") \
+    .option("header", "true") \
+    .option("inferSchema", "true") \
+    .load("employees.csv")
+
+# Always check schema first
+df.printSchema()
+
+#Show count
+df.show(5)
+print('Row count:', df.count())
+print('Column count:', len(df.columns))
+
+# Production: provide schema explicitly
+
+schema = StructType([
+StructField('name', StringType(), True),
+StructField('age', IntegerType(), True),
+StructField('salary', DoubleType(), True),
+StructField('department', StringType(), True),
+])
+
+df = spark.read.csv('employees.csv', header=True, schema=schema)
