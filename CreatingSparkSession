@@ -1,0 +1,30 @@
+#CreatingSparkSession
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+.appName('MyApp') \
+.master('local[*]') \
+.getOrCreate()
+
+# Access SparkContext via SparkSession if needed
+sc = spark.sparkContext
+print(sc.version)
+
+----------------------------------------------------------
+
+Note: 
+
+.master("local[*]") : 
+It means "Run Spark locally on this machine (Not on cluster) and use all available CPU cores for parallel processing."
+
+Some other examples:
+
+#Use a specific number of cores
+.master("local[4]")
+
+#For YARN:
+.master("yarn")
+
+#For Kubernetes:
+.master("k8s://https://my-k8s-cluster:6443")
