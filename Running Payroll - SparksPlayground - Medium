@@ -1,0 +1,32 @@
+You work in the payroll department and are asked to process the payroll data of a company. 
+You are given two DataFrames: employees and payroll. employeescontains employee information, andpayrollcontains the payroll data.
+
+Write a function that returns the calculated pay for each employee.
+
+The pay should be calculated as follows:
+
+If an employee works less than or equal to 40 hours, their pay is equal to the product of the hours worked and the hourly rate.
+If an employee works more than 40 hours, they are paid the regular hourly rate for the first 40 hours and 1.5 times the hourly rate for any hours worked above 40.
+
+>>> Solution
+
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+from pyspark.sql import Window as W
+
+spark = SparkSession.builder.appName('Spark Playground').getOrCreate()
+
+# Assume the dataframes employees, payroll are already initialized.
+
+joined_df = payroll.join(employees, on="employee_id", how="left")
+
+calculated_df = joined_df.withColumn( "pay", when( col("hours_worked") <= 40, col("hours_worked") * col("hourly_rate") )\
+                                      .otherwise( (40 * col("hourly_rate")) + ((col("hours_worked") - 40) * col("hourly_rate") * 1.5) ) )
+
+final_df = calculated_df.select("employee_id", "name", "pay", "position")
+
+
+# Write the logic and display the final dataframe
+
+display(final_df)
+    
