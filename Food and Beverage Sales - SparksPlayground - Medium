@@ -1,0 +1,29 @@
+You work in the Food and Beverage industry and are given three DataFrames containing product, sales, and inventory information.
+
+Your task is to write a function that takes products, sales, and inventory and returns a DataFrame that:
+
+Aggregate sales: For each product, compute total_quantity and total_revenue by summing across all sales rows.
+Aggregate inventory: For each product, compute total_stock by summing stock across all warehouses.
+Combine: Join the aggregated sales and inventory data with the products table so every product appears in the output.
+Fill nulls: Replace any null values in total_quantity, total_revenue, and total_stock with 0.
+The output should be sorted by product_id ascending.
+
+>>> Solution:
+
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.getOrCreate()
+
+# Your logic goes here to create df_result
+
+agg_sales = sales.groupBy('product_id').agg(sum('quantity').alias('total_quantity'), sum('revenue').alias('total_revenue'))
+
+agg_inv = inventory.groupBy('product_id').agg(sum('stock').alias('total_stock'))
+
+combine = products.join(agg_sales, 'product_id', 'left')\
+                  .join(agg_inv, 'product_id', 'left')
+
+df_result = combine.fillna({'total_quantity' : 0, 'total_revenue' : 0, 'total_stock' : 0}).orderBy('product_id')
+
+# Display the final DataFrame using the display() function.
+
+display(df_result)
