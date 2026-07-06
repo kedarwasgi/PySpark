@@ -1,0 +1,64 @@
+Problem: A retail catalog system stores product metadata as JSON strings in a single column. 
+Each JSON object contains a category, brand, and rating field for that product.
+
+The metadata column contains JSON strings in the format: {"category": "...", "brand": "...", "rating": <double or null>}
+
+Your task is to write a function that takes df and returns a DataFrame that:
+
+Parses the metadata column into structured fields - category (String), brand (String), and rating (Double) - by defining a schema and extracting each field as a top-level column.
+Filters to keep only products where rating is 4.0 or higher. Products with a null rating should be excluded.
+Sorts the result by rating descending, then product_id ascending.
+
+The result must be sorted by rating descending, then product_id ascending.
+
+>>> Solution:
+
+
+# Initialize Spark session
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
+from pyspark.sql.types import StructType, StructField, StringType, DoubleType
+
+spark = SparkSession.builder.appName('Spark Playground').getOrCreate()
+
+#Copy the starter code or load the file path available in the problem statement 
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.getOrCreate()
+
+data = [
+    (1,  "Laptop Pro 15",     '{"category": "Electronics", "brand": "TechCo",      "rating": 4.5}'),
+    (2,  "Wireless Earbuds",  '{"category": "Electronics", "brand": "SoundWave",   "rating": 3.8}'),
+    (3,  "Running Shoes",     '{"category": "Footwear",    "brand": "SpeedStep",   "rating": 4.2}'),
+    (4,  "Coffee Maker",      '{"category": "Kitchen",     "brand": "BrewMaster",  "rating": 4.7}'),
+    (5,  "Yoga Mat",          '{"category": "Sports",      "brand": "FlexFit",     "rating": null}'),
+    (6,  "Desk Lamp",         '{"category": "Home",        "brand": "BrightLight", "rating": 4.1}'),
+    (7,  "Gaming Mouse",      '{"category": "Electronics", "brand": "TechCo",      "rating": 4.9}'),
+    (8,  "Water Bottle",      '{"category": "Sports",      "brand": "HydroFlow",   "rating": 3.5}'),
+    (9,  "Backpack",          '{"category": "Travel",      "brand": "CarryOn",     "rating": 4.0}'),
+    (10, "Sunglasses",        '{"category": "Accessories", "brand": "SunShade",    "rating": 3.9}'),
+    (11, "Bluetooth Speaker", '{"category": "Electronics", "brand": "SoundWave",   "rating": 4.3}'),
+    (12, "Kitchen Scale",     '{"category": "Kitchen",     "brand": "BrewMaster",  "rating": null}'),
+]
+
+columns = ["product_id", "product_name", "metadata"]
+df = spark.createDataFrame(data, columns)
+
+# Your logic goes here to create df_result
+
+metadata_schema = StructType([
+  StructField("category", StringType()),
+  StructField("brand", StringType()),
+  StructField("rating", DoubleType())
+                ])  
+
+df_parsed = df.withColumn(
+    "metadata",
+    from_json(col("metadata"), metadata_schema))
+
+
+df_result = df_parsed.filter((col("metadata.rating") >= 4.0) & col("metadata.rating").isNotNull()) \
+.select("product_id", "product_name", col("metadata.category").alias("category"),col("metadata.brand").alias("brand"),col("metadata.rating").alias("rating")).orderBy(col("rating").desc(),col("product_id").asc())
+
+
+display(df_result)
