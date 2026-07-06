@@ -1,0 +1,13 @@
+#Word count program using dataframe api's
+
+from pyspark.sql.functions import split, explode, trim, col
+
+df = spark.read.text("/datasets/notes.txt")
+
+word_count_df = (
+         df.select(explode(split(col("value"), " ")).alias("word"))  
+         .groupBy("word")
+         .count()
+)
+
+display(word_count_df)
