@@ -1,0 +1,104 @@
+'''
+You are given two DataFrames - employees that records employee details and salaries, 
+and departments that records each department's approved headcount budget.
+
+Your goal is to audit salary costs against department budgets and identify the top earner in each department.
+
+Input Schema
+
+employees
+Column Name	Data Type
+employee_id	Long
+name	String
+department_id	Long
+salary	Long
+
+departments
+Column Name	Data Type
+department_id	Long
+department_name	String
+budget	Long
+
+Your task is to write a function that takes employees and departments and returns a DataFrame that:
+
+Compute total salary cost: For each department, calculate the sum of all employee salaries.
+Compute utilization: Calculate salary budget utilization as a percentage of the department's budget, rounded to 2 decimal places.
+Flag over-budget departments: Mark a department as over budget if its total salary cost strictly exceeds its budget.
+Identify top earner: For each department, find the name and salary of the highest-paid employee. If two employees share the same salary, return either one.
+Return one row per department with all computed fields.
+'''
+
+
+from pyspark.sql import SparkSession
+from pyspark.sql.window import Window
+from pyspark.sql import functions as F
+
+spark = SparkSession.builder.appName('Spark Playground').getOrCreate()
+
+employees_data = [
+    (1,  "Alice",  1, 120000),
+    (2,  "Bob",    1, 130000),
+    (3,  "Carol",  1, 115000),
+    (4,  "Dave",   1, 140000),
+    (5,  "Eve",    1, 110000),
+    (6,  "Frank",  2, 75000),
+    (7,  "Grace",  2, 80000),
+    (8,  "Hank",   2, 60000),
+    (9,  "Ivy",    3, 55000),
+    (10, "Jack",   3, 50000),
+    (11, "Kate",   3, 45000),
+    (12, "Liam",   4, 90000),
+    (13, "Mia",    4, 85000),
+    (14, "Noah",   4, 70000),
+    (15, "Olivia", 4, 65000),
+]
+employees_columns = ["employee_id", "name", "department_id", "salary"]
+employees = spark.createDataFrame(employees_data, employees_columns)
+
+departments_data = [
+    (1, "Engineering", 700000),
+    (2, "Marketing",   200000),
+    (3, "HR",          150000),
+    (4, "Sales",       300000),
+]
+departments_columns = ["department_id", "department_name", "budget"]
+departments = spark.createDataFrame(departments_data, departments_columns)
+
+df = employees.join(departments, on="department_id", how="inner")
+
+dept_agg = df.groupBy("department_id", "department_name", "budget").agg(
+    F.sum("salary").alias("total_salary")
+)
+
+dept_agg = (
+    dept_agg
+    .withColumn("utilization_pct", F.round((F.col("total_salary") / F.col("budget")) * 100, 2))
+    .withColumn("is_over_budget", F.col("total_salary") > F.col("budget"))
+)
+
+w = Window.partitionBy("department_id").orderBy(F.col("salary").desc())
+
+top_earners = (
+    df.withColumn("rn", F.row_number().over(w))
+    .filter(F.col("rn") == 1)
+    .select(
+        "department_id",
+        F.col("name").alias("top_earner_name"),
+        F.col("salary").alias("top_earner_salary")
+    )
+)
+
+df_result = (
+    dept_agg.join(top_earners, on="department_id", how="left")
+    .select(
+        "department_name",
+        "total_salary",
+        "budget",
+        "utilization_pct",
+        "is_over_budget",
+        "top_earner_name",
+        "top_earner_salary"
+    )
+)
+
+display(df_result)
