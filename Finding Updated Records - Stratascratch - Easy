@@ -1,0 +1,28 @@
+Finding Updated Records - Stratascratch - Easy
+
+
+We have a table with employees and their salaries; however, some of the records are old and contain outdated salary information. 
+Since there is no timestamp, assume salary is non-decreasing over time. You can consider the current salary for an employee is the largest salary value among their records. 
+If multiple records share the same maximum salary, return any one of them. Output their id, first name, last name, department ID, and current salary. 
+Order your list by employee ID in ascending order.
+
+ms_employee_salary table"
+
+id:bigint
+first_name:string
+last_name:string
+salary:bigint
+department_id:bigint
+
+>>> Solution
+
+from pyspark.sql.window import Window
+import pyspark.sql.functions as F
+
+window_spec = Window.partitionBy('id').orderBy(F.desc('salary'), F.desc('department_id'))
+
+result = ms_employee_salary.withColumn('rn', F.row_number().over(window_spec)) \
+    .filter(F.col('rn') == 1) \
+    .drop('rn') \
+    .orderBy('id') \
+    .toPandas()
