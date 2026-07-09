@@ -1,0 +1,30 @@
+Workers With The Highest Salaries
+
+Management wants to analyze only employees with official job titles. 
+Find the title(s) of the worker(s) with the highest salary among workers who have a corresponding record in the  title  table. 
+If multiple employees have the same highest salary, include all their job titles.
+
+>>> Solution:
+
+# Import your libraries
+import pyspark
+from pyspark.sql import functions as F
+# Start writing code
+joined = worker.join(
+    title,
+    worker.worker_id == title.worker_ref_id,
+    "inner"
+)
+
+# Find the highest salary
+max_salary = joined.agg(F.max("salary")).first()[0]
+
+# Get the title(s) of workers with the highest salary
+result = (
+    joined
+    .filter(F.col("salary") == max_salary)
+    .select("worker_title")
+    .withColumnRenamed("worker_title", "best_paid_title")
+)
+# To validate your solution, convert your final pySpark df to a pandas df
+result.toPandas()
