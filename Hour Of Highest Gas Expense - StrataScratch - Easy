@@ -1,0 +1,16 @@
+'''
+Find the hour with the highest gasoline cost. Assume there's only 1 hour with the highest gas cost.
+'''
+
+>>> Solution:
+
+# Import your libraries
+import pyspark
+from pyspark.sql import functions as F
+
+# Start writing code
+df_max = lyft_rides.select(F.max("gasoline_cost")).collect()[0][0]
+df_result = lyft_rides.filter(F.col("gasoline_cost")>=df_max)
+
+# To validate your solution, convert your final pySpark df to a pandas df
+df_result.select("hour").toPandas()
