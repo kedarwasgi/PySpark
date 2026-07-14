@@ -1,0 +1,19 @@
+Top Ranked Songs
+
+Find songs that have ranked in the top position.
+Output the track name and the number of times it ranked at the top. 
+Sort your records by the number of times the song was in the top position in descending order.
+
+>>> Solution:
+
+import pyspark.sql.functions as F
+
+position = spotify_worldwide_daily_song_ranking.filter(
+    F.col("position") == 1
+)
+result = (
+    position.groupBy("trackname")
+    .agg(F.count("*").alias("times_top1"))
+    .orderBy(F.desc("times_top1"))
+)
+result.toPandas()
