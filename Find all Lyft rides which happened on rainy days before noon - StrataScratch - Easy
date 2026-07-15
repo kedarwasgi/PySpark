@@ -1,0 +1,13 @@
+Find all Lyft rides which happened on rainy days before noon
+
+>>> Solution:
+
+# Import your libraries
+import pyspark
+from pyspark.sql.functions import *
+
+# Start writing code
+df_filtered = lyft_rides.filter((col('weather')=='rainy') & (col('hour')<12))
+
+# To validate your solution, convert your final pySpark df to a pandas df
+df_filtered.toPandas()
