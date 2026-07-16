@@ -1,0 +1,10 @@
+'''
+Find all athletes who were older than 40 years when they won either Bronze or Silver medals
+'''
+>>> Solution:
+
+import pyspark.sql.functions as F
+
+place = ['Bronze', 'Silver']
+result = olympics_athletes_events.filter((F.col('age') > 40) & (F.col('medal').isin(place))).select('name').toPandas()
+result
