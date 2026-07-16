@@ -1,0 +1,14 @@
+Olympics Events List By Age
+'''
+Find the lowest, average, and the highest ages of athletes across all Olympics. 
+HINT: If athlete participated in more than one discipline at one Olympic games, consider it as a separate athlete, no need to remove such edge cases.
+'''
+>>> Solution:
+
+import pyspark.sql.functions as F
+
+result = olympics_athletes_events.select(
+    F.min("age").alias("lowest_age"),
+    F.mean("age").alias("mean_age"),
+    F.max("age").alias("highest_age"),
+).toPandas()
