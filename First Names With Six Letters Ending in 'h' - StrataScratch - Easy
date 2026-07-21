@@ -1,0 +1,16 @@
+First Names With Six Letters Ending in 'h'
+'''
+Find all workers whose first name contains 6 letters and also ends with the letter 'h'.
+Display all information about the workers in output.
+'''
+>>> Solution
+
+# Import your libraries
+import pyspark
+from pyspark.sql.functions import *
+
+# Start writing code
+df = worker.filter((length(col('first_name'))>=6) & (col('first_name').endswith('h')))
+
+# To validate your solution, convert your final pySpark df to a pandas df
+df.toPandas()
